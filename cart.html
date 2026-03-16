@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Packapong — Cart</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+</head>
+<body>
+  <nav class="nav">
+    <a href="index.html" class="nav-logo">Packapong</a>
+    <div class="nav-links">
+      <a href="index.html">Shop</a>
+      <a href="cart.html" class="cart-link active">Cart <span class="cart-badge" id="cartCount">0</span></a>
+    </div>
+  </nav>
+
+  <main class="cart-page">
+    <a class="back-link" href="index.html">← Continue shopping</a>
+    <h1 class="page-title">Your Cart</h1>
+    <div class="cart-layout">
+      <div class="cart-items" id="cartItems"></div>
+      <aside class="cart-summary" id="cartSummary"></aside>
+    </div>
+  </main>
+
+  <footer class="footer"><p>© 2026 Packapong. All rights reserved.</p></footer>
+
+  <script src="data.js"></script>
+  <script src="cart.js"></script>
+  <script>
+    function renderCart() {
+      const cart = getCart();
+      const itemsEl = document.getElementById('cartItems');
+      const summaryEl = document.getElementById('cartSummary');
+      updateCartBadge();
+
+      if (cart.length === 0) {
+        itemsEl.innerHTML = `<div class="empty-cart"><p>Your cart is empty.</p><a href="index.html" class="cta-btn" style="display:inline-block;text-decoration:none;margin-top:1.5rem;">Start Shopping</a></div>`;
+        summaryEl.innerHTML = '';
+        return;
+      }
+
+      itemsEl.innerHTML = cart.map(item => {
+        const p = products.find(x => x.id === item.id);
+        return `
+          <div class="cart-item">
+            <div class="cart-item-img" style="background:${p.color}"><span>${p.emoji}</span></div>
+            <div class="cart-item-info">
+              <p class="cart-item-cat">${p.category}</p>
+              <p class="cart-item-name">${p.name}</p>
+              <p class="cart-item-price">$${p.price.toFixed(2)}</p>
+            </div>
+            <div class="cart-item-controls">
+              <button class="qty-btn" onclick="updateQty(${item.id}, ${item.qty - 1})">−</button>
+              <span class="qty-display">${item.qty}</span>
+              <button class="qty-btn" onclick="updateQty(${item.id}, ${item.qty + 1})">+</button>
+              <button class="remove-btn" onclick="removeFromCart(${item.id})">✕</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      const subtotal = cart.reduce((sum, item) => {
+        const p = products.find(x => x.id === item.id);
+        return sum + p.price * item.qty;
+      }, 0);
+      const shipping = subtotal > 100 ? 0 : 9.99;
+      const total = subtotal + shipping;
+
+      summaryEl.innerHTML = `
+        <h3 class="summary-title">Order Summary</h3>
+        <div class="summary-row"><span>Subtotal</span><span>$${subtotal.toFixed(2)}</span></div>
+        <div class="summary-row"><span>Shipping</span><span>${shipping === 0 ? '<em>Free</em>' : '$' + shipping.toFixed(2)}</span></div>
+        ${subtotal < 100 ? `<p class="free-shipping-msg">Spend $${(100 - subtotal).toFixed(2)} more for free shipping</p>` : '<p class="free-shipping-msg success">🎉 You have free shipping!</p>'}
+        <div class="summary-row total-row"><span>Total</span><span>$${total.toFixed(2)}</span></div>
+        <a href="checkout.html" class="cta-btn" style="display:block;text-align:center;text-decoration:none;margin-top:1.5rem;">Proceed to Checkout</a>
+      `;
+    }
+
+    function updateQty(id, newQty) {
+      if (newQty < 1) { removeFromCart(id); return; }
+      let cart = getCart();
+      cart = cart.map(i => i.id === id ? {...i, qty: newQty} : i);
+      saveCart(cart);
+      renderCart();
+    }
+
+    renderCart();
+  </script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Packapong — Shop</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+</head>
+<body>
+  <!-- NAV -->
+  <nav class="nav">
+    <a href="index.html" class="nav-logo">Packapong</a>
+    <div class="nav-links">
+      <a href="index.html" class="active">Shop</a>
+      <a href="cart.html" class="cart-link">
+        Cart <span class="cart-badge" id="cartCount">0</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="hero-text">
+      <p class="hero-eyebrow">New Collection</p>
+      <h1>Crafted<br/><em>for you</em></h1>
+      <p class="hero-sub">Timeless pieces, modern sensibility.</p>
+    </div>
+    <div class="hero-accent"></div>
+  </header>
+
+  <!-- FILTERS -->
+  <section class="filters">
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="clothing">Clothing</button>
+    <button class="filter-btn" data-filter="accessories">Accessories</button>
+    <button class="filter-btn" data-filter="footwear">Footwear</button>
+  </section>
+
+  <!-- PRODUCT GRID -->
+  <main class="product-grid" id="productGrid"></main>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast">Added to cart</div>
+
+  <footer class="footer">
+    <p>© 2026 Packapong. All rights reserved.</p>
+  </footer>
+
+  <script src="data.js"></script>
+  <script src="cart.js"></script>
+  <script>
+    renderProducts(products, 'productGrid');
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const f = btn.dataset.filter;
+        const filtered = f === 'all' ? products : products.filter(p => p.category === f);
+        renderProducts(filtered, 'productGrid');
+      });
+    });
+
+    function renderProducts(list, gridId) {
+      const grid = document.getElementById(gridId);
+      grid.innerHTML = list.map(p => `
+        <article class="product-card" data-id="${p.id}">
+          <a href="product.html?id=${p.id}" class="product-img-wrap">
+            <div class="product-img" style="background:${p.color}">
+              <span class="product-emoji">${p.emoji}</span>
+            </div>
+            ${p.badge ? `<span class="badge">${p.badge}</span>` : ''}
+          </a>
+          <div class="product-info">
+            <p class="product-cat">${p.category}</p>
+            <a href="product.html?id=${p.id}" class="product-name">${p.name}</a>
+            <div class="product-bottom">
+              <span class="product-price">$${p.price.toFixed(2)}</span>
+              <button class="add-btn" onclick="addToCart(${p.id})">+</button>
+            </div>
+          </div>
+        </article>
+      `).join('');
+    }
+  </script>
+</body>
+</html>

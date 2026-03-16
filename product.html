@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Packapong — Product</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+</head>
+<body>
+  <nav class="nav">
+    <a href="index.html" class="nav-logo">Packapong</a>
+    <div class="nav-links">
+      <a href="index.html">Shop</a>
+      <a href="cart.html" class="cart-link">Cart <span class="cart-badge" id="cartCount">0</span></a>
+    </div>
+  </nav>
+
+  <main class="product-detail" id="productDetail"></main>
+
+  <section class="related-section">
+    <h3>You may also like</h3>
+    <div class="product-grid related-grid" id="relatedGrid"></div>
+  </section>
+
+  <div class="toast" id="toast">Added to cart</div>
+  <footer class="footer"><p>© 2026 Packapong. All rights reserved.</p></footer>
+
+  <script src="data.js"></script>
+  <script src="cart.js"></script>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const id = parseInt(params.get('id'));
+    const product = products.find(p => p.id === id);
+
+    if (!product) {
+      document.getElementById('productDetail').innerHTML = '<p style="padding:4rem;text-align:center;">Product not found. <a href="index.html">Back to shop</a></p>';
+    } else {
+      document.title = `Packapong — ${product.name}`;
+      document.getElementById('productDetail').innerHTML = `
+        <a class="back-link" href="index.html">← Back to shop</a>
+        <div class="detail-layout">
+          <div class="detail-img" style="background:${product.color}">
+            <span class="detail-emoji">${product.emoji}</span>
+          </div>
+          <div class="detail-info">
+            <p class="product-cat">${product.category}</p>
+            <h1 class="detail-name">${product.name}</h1>
+            <p class="detail-price">$${product.price.toFixed(2)}</p>
+            <p class="detail-desc">${product.description}</p>
+            <div class="size-row">
+              <p class="size-label">Select Size</p>
+              <div class="sizes">
+                ${product.sizes.map(s => `<button class="size-btn" onclick="selectSize(this)">${s}</button>`).join('')}
+              </div>
+            </div>
+            <div class="qty-row">
+              <button class="qty-btn" onclick="changeQty(-1)">−</button>
+              <span class="qty-display" id="qtyDisplay">1</span>
+              <button class="qty-btn" onclick="changeQty(1)">+</button>
+            </div>
+            <button class="cta-btn" onclick="addToCartDetail(${product.id})">Add to Cart</button>
+          </div>
+        </div>
+      `;
+
+      // Related products
+      const related = products.filter(p => p.category === product.category && p.id !== product.id).slice(0, 3);
+      document.getElementById('relatedGrid').innerHTML = related.map(p => `
+        <article class="product-card">
+          <a href="product.html?id=${p.id}" class="product-img-wrap">
+            <div class="product-img" style="background:${p.color}"><span class="product-emoji">${p.emoji}</span></div>
+          </a>
+          <div class="product-info">
+            <p class="product-cat">${p.category}</p>
+            <a href="product.html?id=${p.id}" class="product-name">${p.name}</a>
+            <div class="product-bottom">
+              <span class="product-price">$${p.price.toFixed(2)}</span>
+              <button class="add-btn" onclick="addToCart(${p.id})">+</button>
+            </div>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    let qty = 1;
+    function changeQty(d) {
+      qty = Math.max(1, qty + d);
+      document.getElementById('qtyDisplay').textContent = qty;
+    }
+    function selectSize(el) {
+      document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+    function addToCartDetail(id) {
+      for (let i = 0; i < qty; i++) addToCart(id);
+    }
+  </script>
+</body>
+</html>

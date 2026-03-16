@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Packapong — Checkout</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+</head>
+<body>
+  <nav class="nav">
+    <a href="index.html" class="nav-logo">Packapong</a>
+    <div class="nav-links">
+      <a href="index.html">Shop</a>
+      <a href="cart.html" class="cart-link">Cart <span class="cart-badge" id="cartCount">0</span></a>
+    </div>
+  </nav>
+
+  <main class="checkout-page">
+    <a class="back-link" href="cart.html">← Back to cart</a>
+    <h1 class="page-title">Checkout</h1>
+
+    <div class="checkout-layout">
+      <!-- FORM -->
+      <div class="checkout-form-wrap">
+        <section class="form-section">
+          <h2 class="form-section-title">Contact</h2>
+          <div class="form-row">
+            <div class="form-group">
+              <label>First Name</label>
+              <input type="text" id="firstName" placeholder="Jane"/>
+            </div>
+            <div class="form-group">
+              <label>Last Name</label>
+              <input type="text" id="lastName" placeholder="Doe"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="email" placeholder="jane@example.com"/>
+          </div>
+          <div class="form-group">
+            <label>Phone</label>
+            <input type="tel" id="phone" placeholder="+1 555 000 0000"/>
+          </div>
+        </section>
+
+        <section class="form-section">
+          <h2 class="form-section-title">Shipping Address</h2>
+          <div class="form-group">
+            <label>Address</label>
+            <input type="text" id="address" placeholder="123 Main Street"/>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>City</label>
+              <input type="text" id="city" placeholder="New York"/>
+            </div>
+            <div class="form-group">
+              <label>ZIP Code</label>
+              <input type="text" id="zip" placeholder="10001"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Country</label>
+            <select id="country">
+              <option value="">Select country</option>
+              <option>United States</option>
+              <option>United Kingdom</option>
+              <option>Thailand</option>
+              <option>Australia</option>
+              <option>Canada</option>
+              <option>Germany</option>
+              <option>France</option>
+              <option>Japan</option>
+            </select>
+          </div>
+        </section>
+
+        <section class="form-section">
+          <h2 class="form-section-title">Payment</h2>
+          <div class="form-group">
+            <label>Card Number</label>
+            <input type="text" placeholder="1234 5678 9012 3456" maxlength="19" oninput="formatCard(this)"/>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Expiry</label>
+              <input type="text" placeholder="MM / YY" maxlength="7" oninput="formatExpiry(this)"/>
+            </div>
+            <div class="form-group">
+              <label>CVV</label>
+              <input type="text" placeholder="123" maxlength="3"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Cardholder Name</label>
+            <input type="text" placeholder="Jane Doe"/>
+          </div>
+        </section>
+
+        <button class="cta-btn" style="width:100%;margin-top:1rem;" onclick="placeOrder()">Place Order</button>
+      </div>
+
+      <!-- ORDER SUMMARY -->
+      <aside class="checkout-summary" id="checkoutSummary"></aside>
+    </div>
+  </main>
+
+  <!-- SUCCESS MODAL -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modal-icon">✓</div>
+      <h2>Order Placed!</h2>
+      <p>Thank you for your purchase. A confirmation email will be sent shortly.</p>
+      <a href="index.html" class="cta-btn" style="display:inline-block;text-decoration:none;margin-top:1.5rem;">Continue Shopping</a>
+    </div>
+  </div>
+
+  <footer class="footer"><p>© 2026 Packapong. All rights reserved.</p></footer>
+
+  <script src="data.js"></script>
+  <script src="cart.js"></script>
+  <script>
+    function renderSummary() {
+      const cart = getCart();
+      const el = document.getElementById('checkoutSummary');
+      updateCartBadge();
+      if (cart.length === 0) {
+        el.innerHTML = '<p style="color:var(--muted)">Your cart is empty.</p>';
+        return;
+      }
+      const subtotal = cart.reduce((s, i) => s + products.find(p => p.id === i.id).price * i.qty, 0);
+      const shipping = subtotal > 100 ? 0 : 9.99;
+      const total = subtotal + shipping;
+
+      el.innerHTML = `
+        <h3 class="summary-title">Order Summary</h3>
+        ${cart.map(item => {
+          const p = products.find(x => x.id === item.id);
+          return `<div class="checkout-item">
+            <div class="checkout-item-img" style="background:${p.color}"><span>${p.emoji}</span></div>
+            <div><p class="checkout-item-name">${p.name}</p><p class="checkout-item-qty">Qty: ${item.qty}</p></div>
+            <span>$${(p.price * item.qty).toFixed(2)}</span>
+          </div>`;
+        }).join('')}
+        <hr class="divider"/>
+        <div class="summary-row"><span>Subtotal</span><span>$${subtotal.toFixed(2)}</span></div>
+        <div class="summary-row"><span>Shipping</span><span>${shipping === 0 ? 'Free' : '$' + shipping.toFixed(2)}</span></div>
+        <div class="summary-row total-row"><span>Total</span><span>$${total.toFixed(2)}</span></div>
+      `;
+    }
+
+    function placeOrder() {
+      // Basic validation
+      const required = ['firstName','lastName','email','address','city','zip','country'];
+      let valid = true;
+      required.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el.value.trim()) { el.style.borderColor = '#c0392b'; valid = false; }
+        else el.style.borderColor = '';
+      });
+      if (!valid) { alert('Please fill in all required fields.'); return; }
+
+      document.getElementById('modalOverlay').classList.add('active');
+      saveCart([]);
+    }
+
+    function formatCard(el) {
+      let v = el.value.replace(/\D/g,'').substring(0,16);
+      el.value = v.replace(/(.{4})/g,'$1 ').trim();
+    }
+    function formatExpiry(el) {
+      let v = el.value.replace(/\D/g,'').substring(0,4);
+      if (v.length >= 2) v = v.slice(0,2) + ' / ' + v.slice(2);
+      el.value = v;
+    }
+
+    renderSummary();
+  </script>
+</body>
+</html>
